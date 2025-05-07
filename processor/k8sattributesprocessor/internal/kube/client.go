@@ -379,6 +379,26 @@ func (c *WatchClient) deleteLoop(interval time.Duration, gracePeriod time.Durati
 	}
 }
 
+// GetPodByContainerID retrieves a Pod based on the container ID.
+func (c *WatchClient) GetPodByContainerID(containerID string) (*Pod, bool) {
+	c.logger.Debug("Entered GetPodByContainerID", zap.String("containerID", containerID))
+	c.m.RLock() // Use the correct mutex for thread-safe access to the Pods map
+	defer c.m.RUnlock()
+
+	// Iterate through all pods in the Pods map
+	for _, pod := range c.Pods {
+		// Check the container IDs in the pod's containers
+		for id, _ := range pod.Containers.ByID {
+			if id == containerID {
+				return pod, true
+			}
+		}
+	}
+
+	// If no matching pod is found, return nil and false
+	return nil, false
+}
+
 // GetPod takes an IP address or Pod UID and returns the pod the identifier is associated with.
 func (c *WatchClient) GetPod(identifier PodIdentifier) (*Pod, bool) {
 	c.m.RLock()

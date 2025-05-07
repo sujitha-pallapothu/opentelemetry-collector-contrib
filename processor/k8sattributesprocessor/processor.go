@@ -161,6 +161,28 @@ func (kp *kubernetesprocessor) processResource(ctx context.Context, resource pco
 		}
 	}
 
+	// Check if container.id is available
+	if containerID, found := resource.Attributes().Get(conventions.AttributeContainerID); found {
+		kp.logger.Debug("Found container.id", zap.String("containerID", containerID.Str()))
+
+		// Attempt to resolve the pod using container.id
+		pod, podFound := kp.kc.GetPodByContainerID(containerID.Str())
+		kp.logger.Debug("evaluating pod using container.id", zap.Any("pod", pod))
+		if podFound {
+			kp.logger.Debug("Resolved pod using container.id", zap.Any("pod", pod))
+
+			// Add pod attributes to the resource
+			for key, val := range pod.Attributes {
+				if _, found := resource.Attributes().Get(key); !found {
+					resource.Attributes().PutStr(key, val)
+				}
+			}
+			kp.addContainerAttributes(resource.Attributes(), pod)
+			return
+		}
+	}
+
+
 	podIdentifierValue := extractPodID(ctx, resource.Attributes(), kp.podAssociations)
 	kp.logger.Debug("evaluating pod identifier", zap.Any("value", podIdentifierValue))
 

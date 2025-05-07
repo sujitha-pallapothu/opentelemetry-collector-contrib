@@ -93,6 +93,7 @@ type Client interface {
 	GetNode(string) (*Node, bool)
 	Start()
 	Stop()
+	GetPodByContainerID(string) (*Pod, bool)
 }
 
 // ClientProvider defines a func type that returns a new Client.
