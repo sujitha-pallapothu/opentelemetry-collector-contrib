@@ -55,15 +55,13 @@ func parseTimestamp(ts string) time.Time {
 func parseSeverity(renderedLevel, level string) entry.Severity {
 	// Prefer numeric level first (more reliable than localized text)
 	switch level {
-	case "0":
-		return entry.Info // LogAlways - used by Security audit events
 	case "1":
 		return entry.Fatal
 	case "2":
 		return entry.Error
 	case "3":
 		return entry.Warn
-	case "4":
+	case "0", "4":
 		return entry.Info
 	case "5":
 		return entry.Debug // Verbose
